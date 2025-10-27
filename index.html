@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JOY Heart Animation</title>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    background: radial-gradient(circle at center, #d8ee15, #a1c567);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  canvas {
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="heartCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById("heartCanvas");
+const ctx = canvas.getContext("2d");
+resizeCanvas();
+
+let particles = [];
+const text = "JOY";
+const total = 180; // ✅ ลดจำนวนอนุภาคให้อยู่พอดีไม่ทับกัน
+
+// สมการหัวใจ
+function heartFunction(t) {
+  const x = 16 * Math.pow(Math.sin(t), 3);
+  const y = 13 * Math.cos(t) - 5 * Math.cos(2*t)
+          - 2 * Math.cos(3*t) - Math.cos(4*t);
+  return { x, y };
+}
+
+function createParticles() {
+  particles = [];
+  for (let i = 0; i < total; i++) {
+    const t = (i / total) * Math.PI * 2; // ✅ กระจายตำแหน่งเท่า ๆ กัน
+    const { x, y } = heartFunction(t);
+    const scale = Math.min(canvas.width, canvas.height) / 28;
+
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      targetX: canvas.width / 2 + x * scale,
+      targetY: canvas.height / 2 - y * scale,
+      size: 26, // ✅ ใหญ่พอดีชัดเจน
+      color: "rgba(255, 100, 180, 1)",
+      glow: 20,
+      text: text[Math.floor(Math.random() * text.length)]
+    });
+  }
+}
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (let p of particles) {
+    // เคลื่อนไหวเข้าใกล้จุดเป้าหมาย
+    p.x += (p.targetX - p.x) * 0.07;
+    p.y += (p.targetY - p.y) * 0.07;
+
+    ctx.font = `${p.size}px 'Poppins', sans-serif`;
+    ctx.fillStyle = p.color;
+    ctx.shadowColor = p.color;
+    ctx.shadowBlur = p.glow;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(p.text, p.x, p.y);
+  }
+  requestAnimationFrame(animate);
+}
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+window.addEventListener("resize", () => {
+  resizeCanvas();
+  createParticles();
+});
+
+createParticles();
+animate();
+</script>
+</body>
+</html>
